@@ -1,0 +1,22 @@
+WITH ChallengeCount AS (
+    SELECT 
+        c.hacker_id, 
+        h.name, 
+        COUNT(c.challenge_id) AS total_challenges
+    FROM Challenges c
+    JOIN Hackers h ON c.hacker_id = h.hacker_id
+    GROUP BY c.hacker_id, h.name
+),  
+FilteredHackers AS (
+    SELECT total_challenges
+    FROM ChallengeCount
+    GROUP BY total_challenges
+    HAVING COUNT(*) = 1 OR total_challenges = (SELECT MAX(total_challenges) FROM ChallengeCount)
+)
+SELECT 
+    cc.hacker_id, 
+    cc.name, 
+    cc.total_challenges
+FROM ChallengeCount cc
+JOIN FilteredHackers fh ON cc.total_challenges = fh.total_challenges
+ORDER BY cc.total_challenges DESC, cc.hacker_id;
